@@ -4,15 +4,17 @@ import { Player } from "./Schema/player.schema.js";
 import { connectDB } from "./config/db.js";
 import TelegramBot from 'node-telegram-bot-api';
 import axios from "axios";
+import dotenv from 'dotenv';
 
 const app = express();
 
+dotenv.config()
 app.use(cors({
-  origin: "http://localhost:3000", // Allow requests from the frontend server
+  origin: process.env.FRONTEND_URL || 3000, // Allow requests from the frontend server
   methods: ["GET", "POST"]
 }));
 app.use(express.json());
-const BOT_TOKEN = "7896685507:AAECcGSFkW_t39fNAhsujaqz1jYZMTI8v74";
+const BOT_TOKEN = process.env.TELEGRAM_TOKEN;
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
 // API to get a user's coin balance
@@ -39,7 +41,7 @@ bot.onText(/\/start/,async(msg) => {
   const chatId = msg.chat.id;
   const username = msg.from.username;
    // Insert new user into the backend
-   await axios.post("http://localhost:8080/api/coins/update", {
+   await axios.post(`${process.env.BASE_URI}/api/coins/update`, {
     username,
     coins: 0,
   });
@@ -52,7 +54,7 @@ app.get("/",(req,res)=>{
     res.status(200).send("welcome to the game")
 })
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT|| 8080;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   connectDB();
